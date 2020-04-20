@@ -1,0 +1,2 @@
+2020-03-26 17:57:37.757 [main] ERROR com.xhh.o2o.util.ImageUtil - javax.imageio.IIOException: Can't read input file!
+2020-03-26 18:01:24.504 [main] ERROR com.xhh.o2o.util.ImageUtil - javax.imageio.IIOException: Can't read input file!
