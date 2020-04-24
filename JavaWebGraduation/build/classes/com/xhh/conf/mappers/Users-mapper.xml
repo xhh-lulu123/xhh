@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="users">
+ <!-- 查找可以登录的用户 -->
+ 	<select id="queryUser" resultType="usersLogin" parameterType="map">
+ 		<![CDATA[
+ 			select id,name,password from userlogininfo where name=#{name} and password = #{password}
+ 		]]>
+ 	</select>
+	<!-- 查询商品 -->
+	<select id="findGoods" resultType="goodsManage" statementType="PREPARED">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,TYPE,descs,expirydate,state FROM goodsmanage where state = '在售'
+		]]>
+	</select>
+	<!-- 创建订单 -->
+	<insert id="insertOrder" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+			insert into ordermanage (code,name,price,discount,createdate,createperson,state,paytype) values
+			(#{code},#{name},#{price},#{discount},#{createdate},#{createperson},#{state},#{paytype})
+		]]>
+		
+	</insert>
+
+	<!-- 根据ID查询商品信息 -->
+	<select id="findGoodById" resultType="goodsManage" statementType="PREPARED" parameterType="string">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,TYPE,descs,expirydate,state FROM goodsmanage where id = #{id}
+		]]>
+	</select>
+	<!-- 通过搜索查询商品信息 -->
+	<select id="findGoodsByArg" resultType="goodsManage" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,type,descs,expirydate,state FROM goodsmanage
+			
+		]]>
+		<if test="discount!=''">
+		where discount = #{discount}
+		</if>
+		<if test="type!=''">
+		where type = #{type}
+		</if>
+		<if test="name!=''">
+		where name like '%${name}%'
+		</if>
+		<if test="descs!=''">
+		where descs = #{descs}
+		</if>
+	</select>
+	
+	<!-- 创建订单详情 -->
+	<insert id="insertOrderInfo" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+			insert into orderinfo (orderid,ordercode,goodid,goodname,
+			goodprice,gooddiscount,goodtype,gooddescs,address,phone) values 
+			(#{orderid},#{ordercode},#{goodid},#{goodname},#{goodprice},#{gooddiscount},#{goodtype},
+			#{gooddescs},#{address},#{phone})
+			
+		]]>
+	
+	</insert>
+	<!-- 查询订单 -->
+	<select id="findOrder" resultType="order" statementType="PREPARED">
+		select id,code,name,price,discount,createdate,createperson,state,paytype FROM ordermanage
+	</select>	
+	<!-- 查询订单详情 -->
+	<select id="findOrderInfo" resultType="orderInfo" statementType="PREPARED">
+		<![CDATA[
+			SELECT infoID,orderid,ordercode,goodid,goodname,goodprice,gooddiscount,
+			goodtype,gooddescs,address,phone from orderinfo
+			
+		]]>
+	</select>
+	<!-- 通过订单编号查询订单 -->
+	<select id="findOrderByCode" resultType="order" statementType="PREPARED" parameterType="string">
+		select id,code,name,price,discount,createdate,createperson,state,paytype FROM ordermanage 
+		where code = #{code}
+	</select>	
+	<!-- 提交订单 -->
+	<update id="updateOrder" parameterType="string" statementType="PREPARED">
+		update ordermanage set state= '已提交' where id = #{id}
+	</update>
+	<!-- 删除订单 -->
+	<delete id="deleteOrder" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from ordermanage where id =#{id}
+		]]>
+	
+	</delete>
+	<!-- 条件查询订单 -->
+	<select id="findOrderByArg" resultType="order" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+		select id,code,name,price,discount,createdate,createperson,state,paytype FROM ordermanage
+		]]>
+		
+		<if test="code!=''">
+		where code = #{code}
+		</if>
+		<if test="createperson!=''">
+		where createperson = #{createperson}
+		</if>
+		<if test="name!=''">
+		where name =#{name}
+		</if>
+		<if test="pricestart!='' and priceend!=''">
+		where price between #{pricestart} and #{priceend}
+		</if>
+	</select>	
+	<!-- 提交审批，添加审批管理 -->
+	<insert id="addApprovalManage" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+		insert into approvalManage (applyPerson,applyDate,type,approvalPerson,days,reason,state) values 
+		(#{applyPerson},#{applyDate},#{type},#{approvalPerson},#{days},#{reason},#{state})
+		
+		]]>
+	</insert>
+	<!-- 查询用户为经理的列表 -->
+	<select id="findUsersManage" resultType="usersinfo" statementType="PREPARED">
+		<![CDATA[
+			SELECT id,name,sex,phone,email,qq,type,address,job,createdate,updatedate,updateperson,
+			lastdate,lastip,rolename,lastdate,lastip FROM userstab where rolename = '经理'
+			
+		]]>
+	</select>
+	<!-- 通过ID查看审批 -->
+	<select id="findApprovalById" parameterType="string" resultType="approvalManage" statementType="PREPARED">
+		<![CDATA[
+		select id,applyDate,applyPerson,type,approvalPerson,days,reason,state from approvalManage where id =#{id}
+		]]>
+	</select>
+	<!-- 查看审批 -->
+	<select id="findApproval" parameterType="map" resultType="approvalManage" statementType="PREPARED">
+		<![CDATA[
+		select id,applyDate,applyPerson,type,approvalPerson,days,reason,state from approvalManage 
+		]]>
+		<if test="state eq '保存'">
+		where state = '保存'
+		</if>
+		<if test="state eq '已提交'">
+		where state = '已提交'
+		</if>
+		<if test="state eq '已审批'">
+		where state = '已审批'
+		</if>
+		<if test="applyPerson!=null">
+		and applyPerson = #{applyPerson}
+		</if>
+		<if test="approvalPerson!=null">
+		and approvalPerson = #{approvalPerson}
+		</if>
+	</select>
+	<!-- 提交，审批 -->
+	<update id="updateApprovalState" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+		update approvalManage set state =#{state} where id = #{id}
+		]]>
+	</update>
+	<!-- 记录审批结果 -->
+	<insert id="insertApprovalResult" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+		insert into allapproval (id,createperson,applyperson,applydate,result,days,type,state,reason) values 
+		(#{id},#{createperson},#{applyperson},#{applydate},#{result},#{days},#{type},#{state},#{reason})
+		]]>
+	</insert>
+	<!-- 查询审批结果 -->
+	<select id="findApprovalResult" statementType="PREPARED" resultType="allApproval" parameterType="map">
+		<![CDATA[
+		select id,createperson,applyperson,applydate,result,days,type,state,reason from allapproval
+		]]>
+		<if test="createperson!=null">
+		where createperson = #{createperson}
+		</if>
+		<if test="applyperson!=null">
+		where applyperson = #{applyperson}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration 
+	PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 配置Mybatis全局应用属性,如果需要 -->
+	
+	<!-- 配置标识SQL映射注解的接口路径名称,如果需要   -->
+	
+</configuration>

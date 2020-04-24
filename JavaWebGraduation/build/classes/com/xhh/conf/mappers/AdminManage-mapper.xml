@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="admin">
+ 	<!-- 查找管理员，用于登录 -->
+ 	<select id="queryAdmin" resultType="admin" parameterType="map">
+ 		<![CDATA[
+ 			select id,name,password from admintab where name=#{name} and password = #{password}
+ 		]]>
+ 	</select>
+ 	<!-- 添加用户登录 -->
+ 	<insert id="addUser" parameterType="map" statementType="PREPARED">
+ 		<![CDATA[
+			insert into userlogininfo (id,name,password) values (#{id},#{name},#{password})
+		]]>
+ 	
+ 	</insert>
+ 	<!-- 添加用户详细信息 -->
+ 	<insert id="addUserInfo" parameterType="map" statementType="PREPARED">
+ 		<![CDATA[
+			insert into userstab (name,sex,phone,email,qq,type,job,address,createdate,updatedate,updateperson) values 
+			(#{name},#{sex},#{phone},#{email},#{qq},#{type},#{job},#{address},
+			#{createdate},#{updatedate},#{updateperson})
+		]]>
+ 	
+ 	</insert>
+ 	<!-- 更新用户最后登录时间和ip地址 -->
+ 	<insert id="updateUserDateIP" parameterType="map" statementType="PREPARED" >
+ 		<![CDATA[
+			update userstab set lastdate = #{lastdate},lastip =#{lastip} where name = #{name}
+		]]>
+ 	
+ 	</insert>
+ 	<!-- 按照姓名查找用户，添加用户登录时设置ID -->
+ 	<select id="queryUser" resultType="usersinfo" parameterType="string" statementType="PREPARED" >
+ 		<![CDATA[
+ 			select id,name,type,rolename from userstab where name = #{name}
+ 		]]>
+ 	</select>
+ 	<!-- 添加商品信息 -->
+	<insert id="addGoods" parameterType="map" statementType="PREPARED">
+ 		<![CDATA[
+			insert into goodsmanage 
+			(name,price,discount,type,descs,expirydate,state,
+			createperson,createdate) values 
+			(#{name},#{price},#{discount},#{type},#{descs},#{expirydate},#{state},
+			#{createperson},#{createdate})
+		]]>
+ 	
+ 	</insert>
+ 	<!-- 查询用户列表 -->
+	<select id="findUsers" resultType="usersinfo" statementType="PREPARED">
+		<![CDATA[
+			SELECT id,name,sex,phone,email,qq,type,address,job,createdate,updatedate,updateperson,
+			lastdate,lastip,rolename,lastdate,lastip FROM userstab where type = '会员'
+			
+		]]>
+	</select>
+	 <!-- 
+	<resultMap type="usersinfo" id="usersPole" autoMapping="false">
+			<id column="uuid" property="id" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uname" property="name" javaType="string" jdbcType="VARCHAR"/>
+			<result column="usex" property="sex" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uphone" property="phone" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uemail" property="email" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uqq" property="qq" javaType="integer" jdbcType="INTEGER"/>
+			<result column="utype" property="type" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uaddress" property="address" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ulastdate" property="lastdate" javaType="date" jdbcType="DATE"/>
+			<result column="ulastip" property="lastip" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ujob" property="job" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ucreatedate" property="createdate" javaType="date" jdbcType="DATE"/>
+			<result column="uupdatedate" property="updatedate" javaType="date" jdbcType="DATE"/>
+			<result column="uupdateperson" property="updateperson" javaType="string" jdbcType="VARCHAR"/>
+		
+			<association 
+				property="role" autoMapping="false" column="rid" javaType="string" jdbcType="VARCHAR"
+				resultMap="role"
+			></association>		
+	</resultMap>
+	<resultMap type="rolesmanage" id="role" autoMapping="false">
+			<id column="rid" property="id" javaType="string" jdbcType="VARCHAR"/>
+			<result column="rname" property="name" javaType="string" jdbcType="VARCHAR"/>
+	</resultMap>
+	  -->
+	
+	<!-- 添加用户后，在角色管理表中创建用户 -->
+	<insert id="addRoleID" parameterType="string" statementType="PREPARED">		
+		<![CDATA[
+			insert into rolesmanage (id) values (#{id})
+		]]>
+	</insert>
+	<!-- 修改用户信息 -->
+ 	<insert id="updateUserInfo" parameterType="map" statementType="PREPARED">
+ 		<![CDATA[
+			update userstab set sex=#{sex},phone=#{phone},email=#{email},qq=#{qq},type=#{type},
+			job=#{job},address=#{address} where id = #{id}
+		]]>
+ 	
+ 	</insert>
+	
+	<!-- 按照名称查询用户列表 -->
+	<select id="findUsersByArg" resultType="usersinfo" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+			SELECT id,name,sex,phone,email,qq,type,address,job,createdate,updatedate,updateperson,
+			lastdate,lastip,rolename,lastdate,lastip FROM userstab
+		]]>
+		<if test="name!=''">
+		where name = #{name}
+		</if>
+		<if test="sex!=''">
+		where sex = #{sex}
+		</if>
+		<if test="type!=''">
+		where type = #{type}
+		</if>
+		<if test="address!=''">
+		where address like '%${address}%'
+		</if>
+	</select>
+	<!-- 
+	<resultMap type="usersinfo" id="usersPoleByArg" autoMapping="false">
+			<id column="uuid" property="id" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uname" property="name" javaType="string" jdbcType="VARCHAR"/>
+			<result column="usex" property="sex" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uphone" property="phone" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uemail" property="email" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uqq" property="qq" javaType="integer" jdbcType="INTEGER"/>
+			<result column="utype" property="type" javaType="string" jdbcType="VARCHAR"/>
+			<result column="uaddress" property="address" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ulastdate" property="lastdate" javaType="date" jdbcType="DATE"/>
+			<result column="ulastip" property="lastip" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ujob" property="job" javaType="string" jdbcType="VARCHAR"/>
+			<result column="ucreatdate" property="creatdate" javaType="date" jdbcType="DATE"/>
+			<result column="uupdatedate" property="updatedate" javaType="date" jdbcType="DATE"/>
+			<result column="uupdateperson" property="updateperson" javaType="string" jdbcType="VARCHAR"/>
+		
+			<association 
+				property="role" autoMapping="false" column="rid" javaType="string" jdbcType="VARCHAR"
+				resultMap="roleByArg"
+			></association>		
+	</resultMap>
+	<resultMap type="rolesmanage" id="roleByArg" autoMapping="false">
+			<id column="rid" property="id" javaType="string" jdbcType="VARCHAR"/>
+			<result column="rname" property="name" javaType="string" jdbcType="VARCHAR"/>
+	</resultMap>
+	 -->
+	
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from userstab where id = #{id}
+		]]>
+	</delete>
+	<!-- 删除用户登录，实现禁用功能，无法登录进行操作 -->
+	<delete id="deleteLogin" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from userlogininfo where id = #{id}
+		]]>
+	</delete>
+	<!-- 修改角色，分配角色 -->
+	<update id="updateUserRoleName" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			update userstab set rolename = #{rolename} where id = #{id} 
+		]]>
+	</update>
+	<!-- 查找用户登录信息 -->
+	<select id="findUserslogin" resultType="usersLoginAction" statementType="PREPARED">
+		<![CDATA[
+			SELECT name,type,logindate,loginip,loginresult from userslogin 
+		]]>
+	</select>
+	<!-- 查找用户登录操作信息 -->
+	<select id="findUserslog" resultType="usersLog" statementType="PREPARED">
+		<![CDATA[
+			SELECT name,type,result,doinfo,dodate,domod from userslog
+		]]>
+	</select>
+	<!-- 查询订单 -->
+	<select id="findOrder" resultType="order" statementType="PREPARED">
+		<![CDATA[
+			SELECT ID,CODE,NAME,price,discount,createdate,createperson,state,paytype FROM ordermanage
+			where state in ('已提交','已审批')
+		]]>
+	</select>
+	<!-- 提交订单 -->
+	<update id="updateOrder" parameterType="string" statementType="PREPARED">
+		update ordermanage set state= '已审批' where id = #{id}
+	</update>
+	<!-- 删除订单 -->
+	<delete id="deleteOrder" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from ordermanage where id =#{id}
+		]]>
+	
+	</delete>
+	<!-- 条件查询订单 -->
+	<select id="findOrderByArg" resultType="order" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+		select id,code,name,price,discount,createdate,createperson,state,paytype FROM ordermanage
+		]]>
+		
+		<if test="code!=''">
+		where code = #{code}
+		</if>
+		<if test="createperson!=''">
+		where createperson = #{createperson}
+		</if>
+		<if test="name!=''">
+		where name =#{name}
+		</if>
+		<if test="pricestart!='' and priceend!=''">
+		where price between #{pricestart} and #{priceend}
+		</if>
+	</select>	
+	<!-- 插入用户登录日志表 -->
+	<insert id="insertUserLoginAction" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+		insert into userslogin (id,name,type,logindate,loginip,loginresult) values 
+		(#{id},#{name},#{type},#{logindate},#{loginip},#{loginresult})
+		]]>
+	</insert>
+	<!-- 插入用户操作日志表 -->
+	<insert id="insertUserLog" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+		insert into userslog (id,name,type,result,doinfo,dodate,domod) values 
+		(#{id},#{name},#{type},#{result},#{doinfo},#{dodate},#{domod})
+		]]>
+	</insert>
+	<!-- 查询商品 -->
+	<select id="findGoods" resultType="goodsManage" statementType="PREPARED">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,TYPE,descs,expirydate,state,createperson,createdate,modifyperson,modifydate FROM goodsmanage
+		]]>
+	</select>
+	<!-- 根据ID查询商品信息 -->
+	<select id="findGoodById" resultType="goodsManage" statementType="PREPARED" parameterType="string">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,TYPE,descs,expirydate,state FROM goodsmanage where id = #{id}
+		]]>
+	</select>
+	<!-- 通过搜索查询商品信息 -->
+	<select id="findGoodsByArg" resultType="goodsManage" statementType="PREPARED" parameterType="map">
+		<![CDATA[
+			SELECT ID,NAME,price,discount,type,descs,expirydate,state FROM goodsmanage
+			
+		]]>
+		<if test="discount!=''">
+		where discount = #{discount}
+		</if>
+		<if test="type!=''">
+		where type = #{type}
+		</if>
+		<if test="name!=''">
+		where name like '%${name}%'
+		</if>
+		<if test="descs!=''">
+		where descs = #{descs}
+		</if>
+	</select>
+	<!-- 修改商品信息 -->
+	<update id="updateGood" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			update goodsmanage set price = #{price},discount = #{discount},type= #{type},
+			descs=#{descs},expirydate=#{expirydate},state=#{state} where id = #{id}	
+		]]>
+	</update>
+	<!-- 删除商品 -->
+	<delete id="deleteGood" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from goodsmanage where id = #{id}	
+		]]>
+	</delete>
+	<!-- 系统管理模块 -->
+	<!-- 显示管理员 -->
+	<select id="findAdmin" resultType="usersinfo" statementType="PREPARED">
+		<![CDATA[
+			SELECT id,name,sex,phone,email,qq,type,address,job,createdate,updatedate,updateperson,
+			lastdate,lastip,rolename,lastdate,lastip FROM userstab where type = '管理员'
+		]]>
+	</select>
+	<!-- 角色列表 -->
+	<select id="findRoles" resultMap="findRolesrp"  statementType="PREPARED">
+		<![CDATA[
+			SELECT id,r.name rname,roledesc,createperson,createdate,power,p.name pname from 
+			rolesmanage r inner join rolepower p on r.name = p.name	
+		]]>
+	</select>
+	<resultMap type="rolesManage" id="findRolesrp" autoMapping="false">
+		<id column="id" property="id" javaType="string" jdbcType="VARCHAR"/>
+		<result column="rname" property="name" javaType="string" jdbcType="VARCHAR"/>
+		<result column="roledesc" property="roledesc" javaType="string" jdbcType="VARCHAR"/>
+		<result column="createperson" property="createperson" javaType="string" jdbcType="VARCHAR"/>
+		<result column="createdate" property="createdate" javaType="date" jdbcType="DATE"/>
+		<association property="rolePower" autoMapping="false" resultMap="findrp"
+		column="pname" javaType="rolePower"></association>
+	</resultMap>
+	<resultMap type="rolepower" id="findrp" autoMapping="false">
+		<id column="pname" property="name" javaType="string" jdbcType="VARCHAR"/>
+		<result column="power" property="power" javaType="string" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<!-- 按id查找角色列表 -->
+	<select id="findRoleById" resultType="rolesmanage"  statementType="PREPARED" parameterType="string">
+		<![CDATA[
+			SELECT id,name,roledesc,createperson,createdate from rolesmanage where id = #{id}
+		]]>
+	</select>
+
+	<!-- 添加角色 -->
+	<insert id="addRole" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			insert into  rolesmanage (name,roledesc,createperson,createdate) values
+			(#{name},#{roledesc},#{createperson},#{createdate}) 
+		]]>
+	</insert>
+	<!-- 删除角色 -->
+	<delete id="deleteRole" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from rolesmanage where id = #{id}
+		]]>
+	</delete>
+	<!-- 修改角色信息 -->
+	<update id="updateRole" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			update rolesmanage set roledesc=#{roledesc},relevancetab=#{relevancetab} where id = #{id}
+		]]>
+	</update>
+	<!-- 权限列表 -->
+	<select id="findPower" resultType="power"  statementType="PREPARED">
+		<![CDATA[
+			SELECT id,name,descs,createperson,createdate from power
+		]]>
+	</select>
+	<!-- 添加权限 -->
+	<insert id="addPower" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			insert into  power (name,descs,createperson,createdate) values
+			(#{name},#{descs},#{createperson},#{createdate}) 
+		]]>
+	</insert>
+	<!-- 修改权限 -->
+	<insert id="updatePower" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			update  power set descs=#{descs} where id = #{id}
+			
+		]]>
+	</insert>
+	<!-- 删除权限 -->
+	<delete id="deletePower" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from power where id = #{id}
+		]]>
+	</delete>
+	<!-- 权限管理列表 -->
+	<select id="findRolePower" resultType="rolepower"  statementType="PREPARED">
+		<![CDATA[
+			SELECT name,power,quantity,manageperson,managedate from rolepower
+		]]>
+	</select>
+	<!-- 添加权限管理表 -->
+	<insert id="addRolePower" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			insert into  rolepower (name) values (#{name})
+		]]>
+	</insert>
+	<!-- 给角色分配权限 -->
+	<update id="updateRolePowerByName" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			update rolepower set power=#{power},manageperson = #{manageperson},
+			managedate = #{managedate} where name = #{name}
+		]]>
+	</update>
+	<!-- 删除角色权限管理 -->
+	<delete id="deleteRolePower" parameterType="string" statementType="PREPARED">
+		<![CDATA[
+			delete from rolepower where name = #{name}
+		]]>
+	</delete>
+	<!-- 查看待审批任务 -->
+	<select id="findApprovalManage" resultType="approvalmanage" parameterType="map" statementType="PREPARED">
+		<![CDATA[
+			SELECT id,applyperson,applydate,TYPE,approvalperson,days,state,reason FROM approvalmanage
+		]]>
+		<if test="state eq '已提交' ">
+			where state ='已提交'
+		</if>
+		<if test="state eq '已审批' ">
+			where state ='已审批'
+		</if>
+	</select>
+</mapper>
+
+
+
+
+
+
+
+

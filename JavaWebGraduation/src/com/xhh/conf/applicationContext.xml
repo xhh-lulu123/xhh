@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd 
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd 
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd">
+	<!-- 开启自动包扫描，使用注释 标识被托管的java类 -->
+	<context:component-scan base-package="com.xhh.model">
+	</context:component-scan>
+	
+	<context:property-placeholder location="classpath:com/xhh/conf/dbconf.properties"
+	file-encoding="utf-8" order="1" ignore-resource-not-found="false"
+	ignore-unresolvable="false"/>
+	<!-- 配置DBCP数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+			destroy-method="close">
+			<property name="url" value="${jdbc_url}"></property>
+			<property name="driverClassName" value="${jdbc_driver}"></property>
+			<property name="username" value="${jdbc_user}"></property>
+			<property name="password" value="${jdbc_password}"></property>
+			
+	</bean>
+	
+	<!-- 配置Jdbc数据库事务管理组件 并注入必须依赖的数据源 -->
+	<bean id="jdbcTransactionManager" 
+	class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	
+	</bean>
+	
+	<!-- 配置JdbcTemplate 并注入必须依赖的数据源 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"></property>
+	<property name="queryTimeout" value="10"></property>
+	<property name="fetchSize" value="20"></property>
+	</bean>
+	
+	<!-- 配置数据库事务属性通知，定义什么签名的方法如何使用事务 -->
+	<tx:advice id="txAdvice" transaction-manager="jdbcTransactionManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT"
+			no-rollback-for="java.lang.Exception"/>
+			<tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT"
+			no-rollback-for="java.lang.Exception"/>
+			<tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT"
+			no-rollback-for="java.lang.Exception"/>
+			<tx:method name="query*" propagation="REQUIRED" isolation="DEFAULT"
+			no-rollback-for="java.lang.Exception"/>
+			<tx:method name="remove*" propagation="REQUIRED" isolation="DEFAULT"
+			no-rollback-for="java.lang.Exception"/>
+			<tx:method name="find*" propagation="NOT_SUPPORTED" read-only="true"/>
+			<tx:method name="select*" propagation="NOT_SUPPORTED" read-only="true"/>
+			<tx:method name="query*" propagation="NOT_SUPPORTED" read-only="true"/>
+		
+		</tx:attributes>
+
+	</tx:advice>
+	
+	<!-- 配置AOP拦截事务切入点 并关联事务属性通知-->
+	<aop:config >
+	<aop:pointcut expression="execution(* com.xhh.model.*.service.*.*(..))" id="txMethodsPointcut"/>
+	<aop:advisor advice-ref="txAdvice" pointcut-ref="txMethodsPointcut"/>
+	</aop:config>
+	
+	<!-- mybatis与spring整合核心配置 -->
+	<bean id="mybatisEngin" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 配置依赖的数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 设置mybatis核心配置文件的位置 
+		<property name="configLocation" value="com/xhh/model/conf/mybatisConfig.xml"></property>
+		-->
+		<!-- 设置sql映射的加载位置 -->
+		<!-- 方式1 适合不同位置的sql映射文件 -->
+		<!-- 
+		<property name="mapperLocation">
+			<array> 
+				<value>classpath:com/xhh/conf/mappers/UserDetials.xml</value>
+				<value>classpath:com/xhh/conf/mappers/Users.xml</value>
+			</array>
+		</property>
+		 -->
+		<!-- 方式2 适合所有sql映射文件存放在统一目录下，使用通配符*进行设置 -->
+		<property name="mapperLocations" value="classpath:com/xhh/conf/mappers/*.xml"></property>
+		<!-- 配置配置被扫描的实体包类路径，从而应用实体类别名 -->
+		<property name="typeAliasesPackage" value="com.xhh.model"></property>
+		
+	</bean>
+	<!-- 配置SqlSessiontemplate模板组件，以在Dao中使用其进行执行sql操作，可选配置 -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<!-- 使用构造器注入依赖的sqlsessionfactory组件 -->
+		<constructor-arg index = "0" ref="mybatisEngin"></constructor-arg>	
+	
+	</bean>
+		
+</beans>
